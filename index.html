@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delhi NCR Explorer – Metro-Friendly Travel Guide</title>
+<style>
+:root{--bg:#fbf7f1;--card:#fff;--ink:#1f2430;--mute:#6b7280;--line:#e8e0d4;--acc:#d9480f;--acc2:#0b7285;--chip:#f3ece1}
+@media(prefers-color-scheme:dark){:root{--bg:#14161b;--card:#1d2027;--ink:#eceff4;--mute:#9aa3b2;--line:#2c313b;--acc:#ff8a4c;--acc2:#4cc9e0;--chip:#262a33}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{background:linear-gradient(135deg,#d9480f,#b0246b 60%,#4b2a8a);color:#fff;padding:40px 20px 70px;text-align:center}
+header h1{margin:0 0 8px;font-size:clamp(26px,5vw,44px);letter-spacing:-.5px}header p{margin:0 auto;max-width:640px;opacity:.92}
+.stats{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}.stats span{background:rgba(255,255,255,.18);padding:5px 14px;border-radius:99px;font-size:13px}
+main{max-width:1150px;margin:-44px auto 40px;padding:0 14px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 6px 24px rgba(0,0,0,.08)}
+.tabs{display:flex;gap:6px;background:var(--chip);padding:5px;border-radius:12px}
+.tabs button{flex:1;border:0;background:none;padding:11px;border-radius:9px;font:600 15px inherit;color:var(--mute);cursor:pointer}
+.tabs button.on{background:var(--card);color:var(--acc);box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+input,select{flex:1;min-width:150px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.chip{border:1px solid var(--line);background:var(--chip);color:var(--ink);padding:6px 13px;border-radius:99px;cursor:pointer;font:500 13px inherit}
+.chip.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.tog{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mute);cursor:pointer;user-select:none}
+.count{margin:16px 4px 4px;color:var(--mute);font-size:13px}
+h2.grp{margin:22px 4px 8px;font-size:19px;border-left:4px solid var(--acc);padding-left:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;transition:.15s}
+.card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.1)}
+.card h3{margin:0 0 4px;font-size:16.5px;display:flex;justify-content:space-between;gap:8px}
+.star{color:var(--acc);font-size:11px;font-weight:700;background:var(--chip);padding:2px 7px;border-radius:99px;white-space:nowrap;height:fit-content}
+.meta{font-size:13px;color:var(--mute)}.meta b{color:var(--ink);font-weight:600}
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0 2px}.tag{font-size:11.5px;background:var(--chip);color:var(--acc2);padding:2px 9px;border-radius:99px;font-weight:600}
+.more{display:none;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:14px}.card.open .more{display:block}
+.more a{display:inline-block;margin-top:8px;margin-right:8px;color:#fff;background:var(--acc2);padding:6px 12px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600}
+.hint{font-size:12px;color:var(--mute);margin-top:6px}
+.empty{text-align:center;color:var(--mute);padding:40px}
+.tips{margin-top:28px}.tips ul{padding-left:18px;margin:8px 0}.tips li{margin:5px 0}
+footer{text-align:center;color:var(--mute);font-size:12.5px;padding:0 16px 30px}
+</style>
+</head>
+<body>
+<header>
+<h1>🧭 Delhi NCR Explorer</h1>
+<p>A metro-friendly guide to forts, lakes, gardens, museums, workshops, cafés and adventures — find things by <b>where you are</b> or <b>what you love</b>.</p>
+<div class="stats"><span id="sCount"></span><span>🚇 Metro-first</span><span>💸 Budget filter</span><span>⭐ Bonus picks added</span></div>
+</header>
+<main>
+<div class="panel">
+<div class="tabs"><button id="tL" class="on">📍 By Location</button><button id="tA">🎯 By Activity</button></div>
+<div class="tools">
+<input id="q" type="search" placeholder="Search places, metro stations, activities…">
+<select id="metro"></select>
+<label class="tog"><input type="checkbox" id="cheap" style="flex:none;min-width:0"> Under ₹100</label>
+<label class="tog"><input type="checkbox" id="bonus" style="flex:none;min-width:0"> ⭐ Bonus only</label>
+</div>
+<div class="chips" id="chips"></div>
+<div class="hint">Tap any card for full details &amp; a Google Maps link. Timings and fees change — double-check before you go.</div>
+</div>
+<div class="count" id="count"></div>
+<div id="out"></div>
+
+<div class="panel tips">
+<h2 style="margin:0">💡 Insider tips for first-timers</h2>
+<ul>
+<li><b>Use the Delhi Metro.</b> Get a Tourist Card or the “Delhi Metro Sarathi”/ONDC-style QR tickets in the app; avoid road traffic 8–11 am and 5–9 pm.</li>
+<li><b>Best season:</b> October–March. April–June is very hot — visit monuments at sunrise, malls and museums at noon.</li>
+<li><b>Museums &amp; monuments:</b> most museums close on Mondays; many monuments are free on special days. Carry ID and cash for small tickets.</li>
+<li><b>Gurugram &amp; Noida:</b> use Rapid Metro (Gurugram) and the Aqua Line (Noida/Greater Noida); the Blue Line links Noida to Central Delhi.</li>
+<li><b>Day-trip dream:</b> Naini Lake (Nainital, Uttarakhand) is ~300 km away — outside NCR, but a classic weekend getaway from Delhi.</li>
+<li><b>Safety &amp; manners:</b> use app cabs/auto meters, dress modestly at religious sites, and bargain politely in markets.</li>
+</ul>
+</div>
+</main>
+<footer>Made with ❤️ for travellers to Delhi NCR · Prices and hours are approximate and may have changed.</footer>
+
+<script>
+// [name, metro/nearest, region, themes, hours, fee text, fee ₹ (−1 unknown), description, bonus?]
+const D=[
+// HISTORY
+["Humayun's Tomb","JLN Stadium","Central","History,Gardens","Sunrise–sunset","₹35 (Indians)",35,"UNESCO World Heritage garden-tomb that inspired the Taj Mahal. Wander the Charbagh gardens, red-sandstone arches and the neighbouring Nila Gumbad; best at golden hour."],
+["Qutub Minar","Qutub Minar","South","History","Sunrise–sunset","₹40 (Indians)",40,"73-metre 12th-century victory tower with the Iron Pillar and Alai Darwaza in the surrounding UNESCO complex."],
+["Purana Qila & Boating Lake","Supreme Court","Central","History,Lakes","Sunrise–sunset","₹40 (Indians)",40,"16th-century fort with Sher Mandal and Qila-i-Kuhna mosque. The adjoining lake offers pedal boating; the sound & light show runs in the evening."],
+["Agrasen Ki Baoli","Barakhamba Road","Central","History","9:00 am–5:30 pm","Free",0,"A 60-step ancient stepwell hidden between CP's skyscrapers — atmospheric, photogenic and quick to visit."],
+["Safdarjung Tomb","Jor Bagh","Central","History,Gardens","Sunrise–sunset","₹25 (Indians)",25,"Last garden-tomb of the Mughal era, set in a calm lawn — ideal for a short, quiet stop near Lodhi Garden."],
+["Tughlaqabad Fort","Tughlakabad","South","History,Adventure","Sunrise–sunset","₹25 (Indians)",25,"Massive ruined 14th-century fort with ramparts, underground passages and sweeping views. Wear sturdy shoes; explore in a group."],
+["Mehrauli Archaeological Park","Qutub Minar","South","History,Lakes,Gardens","Sunrise–sunset","Free",0,"200+ monuments across 500 acres: Jamali Kamali, Rajon ki Baoli, Balban's tomb and the old Hauz-i-Shamsi tank. A history-lover's paradise."],
+["Adham Khan's Tomb (Bhool Bhulaiya)","Qutub Minar","South","History","Sunrise–sunset","Free",0,"Octagonal Mughal tomb on a hilltop in Mehrauli — locally called Bhool Bhulaiya for its maze-like inner passages."],
+["Jamali Kamali Mosque & Tomb","Qutub Minar","South","History,Art","Sunrise–sunset","Free",0,"Lodi-era mosque with stunning painted and incised plasterwork ceilings; inside Mehrauli Archaeological Park."],
+["Mirza Ghalib Haveli","Chandni Chowk","Old Delhi","History,Art,Knowledge","~11:00 am–6:00 pm","Free",0,"Restored home of the legendary Urdu poet in Ballimaran, Old Delhi, with period décor and exhibits on his life and verse."],
+["Champa Gali","Saket","South","History,Art,Food","~11:00 am–11:00 pm","Free entry",0,"Quirky lane of indie boutiques, art cafés and gardens near Saket/Sultanpur — a laid-back hangout village."],
+["Dhan Mill Compound","Chhatarpur","South","Art,Food","~11:00 am–8:00 pm","Free entry",0,"Former mill turned design & art district: furniture studios, concept stores, galleries and cafés."],
+["Faqir Chand & Sons Book Store","Khan Market","Central","Knowledge","10:00 am–8:00 pm (closed Sun)","Free entry",0,"Delhi's 1951 institution for rare and new books, tucked in Khan Market — perfect for book lovers."],
+// MUSEUMS / KNOWLEDGE / SCIENCE
+["National Crafts Museum","Supreme Court","Central","Art,Knowledge","10:00 am–5:00 pm (closed Mon)","~₹30",30,"India's treasury of folk art, textiles, terracotta and temple objects, plus a village complex where artisans demonstrate their craft."],
+["National Science Centre","Supreme Court","Central","Science,Knowledge","9:30 am–5:30 pm","~₹40–60",50,"Hands-on science: robotics, human biology, dinosaurs and a 3D show. Great for families and curious adults alike."],
+["Nehru Planetarium","Lok Kalyan Marg","Central","Science,Knowledge","Shows ~11:30 am–4:30 pm (closed Mon)","₹100",100,"Dome shows on stars, planets and cosmology in English and Hindi, plus a space-themed exhibit hall near Teen Murti."],
+["PM Sangrahalaya (Teen Murti)","Lok Kalyan Marg","Central","Knowledge,History","10:00 am–5:00 pm (closed Mon)","~₹100",100,"Digital, immersive museum on the lives and legacies of India's Prime Ministers inside historic Teen Murti Bhavan."],
+["National Rail Museum","Moti Bagh","South","Knowledge,Science,History","10:00 am–5:00 pm (closed Mon)","~₹50",50,"Vintage locomotives, royal saloons and a joy-ride toy train across 10 acres — a favourite for all ages."],
+["Delhi Metro Museum","Patel Chowk","Central","Knowledge,Science","~10:00 am–5:00 pm (closed Mon)","Free",0,"Free museum tracing the story of the Delhi Metro with models, tools and exhibits — right inside the metro network."],
+["International Dolls Museum","ITO","Central","Art,Knowledge","10:00 am–6:00 pm (closed Mon)","~₹20",20,"Thousands of dolls from 85+ countries at Children's Book Trust, Bahadur Shah Zafar Marg."],
+["Museum of Illusions","Rajiv Chowk","Central","Science,Adventure,Knowledge","~10:30 am–9:00 pm","~₹700+",700,"Mind-bending rooms — Ames room, vortex tunnel, infinity mirrors — and loads of photo moments in Connaught Place."],
+["Waste to Wonder Park","Sarai Kale Khan","Central","Art,Knowledge","~9:30 am–8:00 pm","₹50",50,"Replicas of the Seven Wonders of the World crafted entirely from scrap metal and waste — best viewed in the evening lights."],
+["National Museum","Udyog Bhawan","Central","History,Art,Knowledge","10:00 am–6:00 pm (closed Mon)","~₹20 (Indians)",20,"Five thousand years of Indian heritage — Harappan artefacts, Mughal miniatures, bronzes and textiles.",1],
+["National Gallery of Modern Art","Central Secretariat","Central","Art,Knowledge","11:00 am–6:30 pm (closed Mon)","~₹20 (Indians)",20,"Housed in Jaipur House near India Gate; 100+ years of modern Indian painting and sculpture.",1],
+["Jantar Mantar","Patel Chowk","Central","Science,History","Sunrise–sunset","₹25 (Indians)",25,"18th-century giant stone astronomical instruments built by Maharaja Jai Singh II — a quirky science-meets-history stop.",1],
+// ART / WORKSHOPS
+["Dilli Haat INA","Dilli Haat INA","South","Art,Food,Shopping","10:30 am–10:00 pm","₹30",30,"Open-air craft bazaar with state-wise stalls and food courts — Kashmiri shawls, Rajasthani puppets, Naga street food."],
+["Perfume Making – Saka Cafe","Safdarjung","South","Workshops,Art","Slots by booking","Varies (book ahead)",-1,"Blend your own signature perfume with a guided session at Saka Cafe, Safdarjung."],
+["Pottery – The Clay Company","Nehru Place","South","Workshops,Art","Slots by booking","Varies (book ahead)",-1,"Hands-on wheel throwing and hand-building studio; take your creation home after firing."],
+["Sushi & Candle Making – Shell Beacon Cafe","Hauz Khas","South","Workshops,Food","Slots by booking","Varies (book ahead)",-1,"Roll your own sushi or pour scented candles at this Hauz Khas Village café-studio."],
+["Kintsugi & Finger Painting – Kala Cafe","Janpath","Central","Workshops,Art","Slots by booking","Varies (book ahead)",-1,"Learn the Japanese art of mending pottery with gold (kintsugi) or try expressive finger painting near Janpath."],
+["Moon Lamp Making – Chalk Board","Hauz Khas","South","Workshops,Science","Slots by booking","Varies (book ahead)",-1,"Craft a glowing 3D-moon night lamp to take home — creative and surprisingly relaxing."],
+["Go Rug Yourself (Rug Tufting)","Lajpat Nagar","South","Workshops,Art","Slots by booking","Varies (book ahead)",-1,"Use a tufting gun to create your own rug or wall hanging in a couple of hours."],
+["Paint It Wild","Rajiv Chowk","Central","Art,Workshops","Check on Instagram","Varies",-1,"Creative paint-themed activity in the heart of CP — confirm slot details before visiting."],
+// LAKES & GARDENS
+["Lodhi Garden","Jor Bagh","Central","Gardens,History","5:00 am–8:00 pm","Free",0,"Delhi's best-loved park with Sayyid and Lodi tombs, bonsai garden, a glasshouse and lovely morning walks."],
+["Sunder Nursery","JLN Stadium","Central","Gardens,History,Lakes","7:00 am–7:00 pm","~₹35",35,"90-acre heritage park beside Humayun's Tomb with lakes, 15+ monuments, 300 tree species and a butterfly zone."],
+["Nehru Park","Lok Kalyan Marg","Central","Gardens,Lakes","5:00 am–8:00 pm","Free",0,"Chanakyapuri's open green space with a pond and amphitheatre — hosts music and yoga events."],
+["Deer Park (Hauz Khas)","Green Park","South","Gardens,Lakes,Adventure","5:00 am–8:00 pm","Free",0,"Spotted deer, rabbits, peacocks and the historic Hauz Khas lake and fort next door."],
+["Garden of Five Senses","Saket","South","Gardens,Art","~9:00 am–7:00 pm","~₹35",35,"Landscaped park with sculptures, pavilions, a cactus garden and a lively spring Garden Festival."],
+["Okhla Bird Sanctuary & Jungle Trail","Okhla Bird Sanctuary","Noida","Lakes,Adventure,Gardens","6:00 am–5:00 pm","₹30 (₹100 trail)",30,"Over 300 bird species along the Yamuna; the Jungle Trail adds a guided nature experience. Winter is peak migratory season."],
+["Rajghat Lake & Gardens","Delhi Gate","Old Delhi","Lakes,Gardens,History","Daylight hours","Free",0,"Riverside gardens and memorials by the Yamuna, a tranquil escape close to Old Delhi."],
+["Baansera Bamboo Park","Sarai Kale Khan","Central","Gardens,Lakes","~6:00 am–8:00 pm","Nominal",-1,"Riverside bamboo-themed park with walking trails, art installations and Yamuna views."],
+["Asola Bhatti Wildlife Sanctuary","Chhatarpur","South","Lakes,Adventure","~6:00 am–6:00 pm","Nominal",-1,"Aravalli forest with trails, birds and lakes — great for hiking and wildlife spotting."],
+["Sanjay Van","Qutub Minar","South","Gardens,Adventure","Sunrise–sunset","Free",0,"784-acre city forest in the Aravallis with trails, rocky hillocks and birdlife."],
+["Amrit Udyan (Rashtrapati Bhavan)","Central Secretariat","Central","Gardens","Seasonal, ~Feb–Mar, book online","Free",0,"The President's spectacular Mughal-style garden opens for a few weeks each spring — book your slot online.",1],
+// ADVENTURE
+["Climb Central","Arjan Garh","South","Adventure","~11:00 am–9:00 pm","Varies",-1,"Indoor bouldering and wall-climbing near Arjan Garh — beginners welcome with staff guidance."],
+["Grid Games","Noida Sector 18","Noida","Adventure","~11:00 am–10:00 pm","Varies",-1,"Gaming and activity arena in Sector 18, ideal for friend groups."],
+["Elevate Gurgaon","Sector 55–56","Gurugram","Adventure","~11:00 am–9:00 pm","Varies",-1,"Active entertainment hub for jumping, play and games — perfect to burn off energy."],
+["Peter's Ranch","Noida Sector 148","Noida","Adventure","~9:00 am–6:00 pm","Varies",-1,"Horse-riding and ranch-style outdoor activities on the Noida Expressway side."],
+["Snowcity","Rohini Sector 18–19","North-West","Adventure","~11:00 am–8:00 pm","Varies",-1,"Indoor snow park — make snowmen, slide and cool off, especially in summer."],
+["ISkate","Moulsari Avenue","Gurugram","Adventure","~11:00 am–9:00 pm","Varies",-1,"Ice-skating rink near Ambience Mall — rentals and coaching available."],
+["Veda Adventure","Knowledge Park 2","Noida","Adventure","~10:00 am–7:00 pm","Varies",-1,"Greater Noida adventure park with zip lines, climbing and outdoor challenges."],
+["F9 Go Karting","IFFCO Chowk","Gurugram","Adventure","~11:00 am–9:00 pm","Varies",-1,"Race competitive go-karts around an outdoor track near IFFCO Chowk."],
+["Worlds of Wonder","Noida Sector 18","Noida","Adventure","~12:00 pm–7:00 pm","Varies",-1,"Amusement park with rides, a water-park section and play zones, near the metro."],
+["EOD Adventure Park","Mayur Vihar","East","Adventure","~10:00 am–7:00 pm","Varies",-1,"Outdoor adventure park in East Delhi — obstacle courses and fun for groups."],
+["Splash It","Saket","South","Adventure","Seasonal, check ahead","Varies",-1,"Splash and water play in Saket — mostly a summer favourite."],
+["Vortex Gaming Sanctuary","Noida Sector 83","Noida","Adventure","~11:00 am–10:00 pm","Varies",-1,"Gaming lounge with VR and arcade — a rainy-day pick."],
+["Lazer Crazer","Hauz Khas","South","Adventure","~12:00 pm–10:00 pm","Varies",-1,"Laser tag arena in Hauz Khas — team up and strategise."],
+// ICONIC BONUS
+["Red Fort (Lal Qila)","Lal Qila","Old Delhi","History","9:30 am–4:30 pm (closed Mon)","~₹35 (Indians)",35,"Iconic 17th-century Mughal fort and Independence Day venue; evening sound & light show tells Delhi's story.",1],
+["Jama Masjid","Jama Masjid","Old Delhi","History","~7:00 am–12:00 pm, 1:30–6:30 pm","Free (climb ~₹)",0,"India's largest mosque — climb the minaret for views over Old Delhi; dress modestly.",1],
+["India Gate & Kartavya Path","Central Secretariat","Central","History,Gardens","24 hours (best at dusk)","Free",0,"Delhi's war memorial on the ceremonial boulevard; lit up beautifully at night.",1],
+["Lotus Temple","Kalkaji Mandir","South","Art,Knowledge","9:00 am–5:30 pm (closed Mon)","Free",0,"Bahá'í House of Worship shaped like a lotus; a silent, peaceful visit.",1],
+["Hauz Khas Fort & Village","Hauz Khas","South","History,Lakes,Food","Sunrise–sunset","~₹25 (fort)",25,"14th-century madrasa and tank beside the lively Hauz Khas Village cafés.",1],
+["Chandni Chowk Food Walk","Chandni Chowk","Old Delhi","Food,History","~10:00 am–10:00 pm","Pay as you eat",-1,"Try parathe, jalebi, chaat and kulfi in Old Delhi's lanes — start at Paranthe Wali Gali.",1],
+// CAFES
+["Diwan-e-Khas","Hauz Khas","South","Food","~12:00 pm–12:00 am","₹₹",-1,"Café in Hauz Khas Village with lake views and a buzzing evening vibe."],
+["Alien Kind","Rajiv Chowk","Central","Food","~12:00 pm–11:30 pm","₹₹",-1,"Quirky themed café in Connaught Place."],
+["Cine Tree Café","Mandi House","Central","Food,Art","~11:00 am–9:00 pm","₹",-1,"Cinema-themed café at Constitution Club of India, great for film buffs."],
+["Voila (Sector 49)","Noida Sector 51","Noida","Food","~11:00 am–11:00 pm","₹₹",-1,"Popular Noida café for hangouts."],
+["United Coffee House Rewind","Noida Sector 18","Noida","Food","~11:00 am–11:00 pm","₹₹",-1,"Retro-style café inside DLF Mall of India."],
+["Masaldani (Sector 50)","Noida Sector 50","Noida","Food","~11:00 am–11:00 pm","₹₹",-1,"Desi-flavoured café with comfort food."],
+["Tossin Pizza","Noida Sector 50 / 76 / 142","Noida","Food","~12:00 pm–11:00 pm","₹",-1,"Local favourite pizza chain with branches in Noida."],
+["Habidade (Sector 104)","Noida Sector 105","Noida","Food","~12:00 pm–11:00 pm","₹₹",-1,"Neighbourhood café for relaxed meals."],
+["Norbu Wang (Majnu ka Tila)","Vidhan Sabha","North-West","Food","~10:00 am–10:00 pm","₹",-1,"Tibetan eats and thukpa in Delhi's Little Tibet (MKT)."],
+// MALLS
+["Grand Venice Mall","Pari Chowk","Noida","Shopping,Food","~11:00 am–10:00 pm","Free entry",0,"Greater Noida mall with canal-style Venice décor and gondola rides."],
+["DLF Mall of India","Noida Sector 18","Noida","Shopping,Food","~11:00 am–11:00 pm","Free entry",0,"One of India's largest malls: brands, cinemas and restaurants."],
+["Ambience Mall","Moulsari Avenue","Gurugram","Shopping,Food","~11:00 am–11:00 pm","Free entry",0,"Large Gurugram mall near ISkate with shopping, food and fun."]
+];
+const REG=["Central","South","Old Delhi","East","North-West","Noida","Gurugram"];
+const THEMES=["Art","Lakes","Gardens","History","Adventure","Science","Knowledge","Workshops","Food","Shopping"];
+const ICON={Art:"🎨",Lakes:"🌊",Gardens:"🌳",History:"🏛️",Adventure:"🧗",Science:"🔬",Knowledge:"📚",Workshops:"🛠️",Food:"☕",Shopping:"🛍️"};
+const P=D.map(a=>({n:a[0],m:a[1],r:a[2],t:a[3].split(","),h:a[4],f:a[5],p:a[6],d:a[7],x:!!a[8]}));
+let tab="L",sel=null,state={q:"",metro:"",cheap:false,bonus:false};
+const $=id=>document.getElementById(id);
+$("sCount").textContent="📌 "+P.length+" places";
+$("metro").innerHTML='<option value="">All metro stations</option>'+[...new Set(P.map(p=>p.m))].sort().map(m=>`<option>${m}</option>`).join("");
+function chips(){
+ const list=tab==="L"?REG:THEMES;
+ $("chips").innerHTML=`<button class="chip ${sel?"":"on"}" data-v="">All</button>`+list.map(c=>`<button class="chip ${sel===c?"on":""}" data-v="${c}">${tab==="L"?"📍":ICON[c]} ${c}</button>`).join("");
+}
+function match(p){
+ const s=state.q.toLowerCase();
+ if(s&&!(p.n+p.m+p.r+p.d+p.t.join(" ")).toLowerCase().includes(s))return false;
+ if(state.metro&&p.m!==state.metro)return false;
+ if(state.cheap&&!(p.p>=0&&p.p<=100))return false;
+ if(state.bonus&&!p.x)return false;
+ if(sel){if(tab==="L"&&p.r!==sel)return false;if(tab==="A"&&!p.t.includes(sel))return false;}
+ return true;
+}
+function card(p){
+ const q=encodeURIComponent(p.n+" Delhi NCR");
+ return `<div class="card"><h3><span>${p.n}</span>${p.x?'<span class="star">⭐ BONUS</span>':""}</h3>
+ <div class="meta">🚇 <b>${p.m}</b> · ${p.r}</div>
+ <div class="meta">🕒 ${p.h}</div><div class="meta">🎟️ ${p.f}</div>
+ <div class="tags">${p.t.map(t=>`<span class="tag">${ICON[t]||""} ${t}</span>`).join("")}</div>
+ <div class="more">${p.d}<br><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${q}">🗺️ Open in Maps</a><a target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${q}&travelmode=transit">🚇 Directions</a></div></div>`;
+}
+function render(){
+ const L=P.filter(match);
+ $("count").textContent=L.length+" place"+(L.length===1?"":"s")+" found";
+ let h="";
+ if(!L.length)h='<div class="empty">No matches — try clearing a filter 🙂</div>';
+ else if(tab==="L"){
+  REG.forEach(r=>{const g=L.filter(p=>p.r===r);if(g.length)h+=`<h2 class="grp">📍 ${r} ${r==="Noida"||r==="Gurugram"?"":"Delhi"} <small style="color:var(--mute)">(${g.length})</small></h2><div class="grid">${g.map(card).join("")}</div>`});
+ }else{
+  THEMES.forEach(t=>{const g=L.filter(p=>p.t.includes(t));if(g.length&&(!sel||sel===t))h+=`<h2 class="grp">${ICON[t]} ${t} <small style="color:var(--mute)">(${g.length})</small></h2><div class="grid">${g.map(card).join("")}</div>`});
+ }
+ $("out").innerHTML=h;
+}
+$("tL").onclick=()=>{tab="L";sel=null;$("tL").className="on";$("tA").className="";chips();render()};
+$("tA").onclick=()=>{tab="A";sel=null;$("tA").className="on";$("tL").className="";chips();render()};
+$("chips").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;sel=b.dataset.v||null;chips();render()};
+$("out").onclick=e=>{if(e.target.closest("a"))return;const c=e.target.closest(".card");if(c)c.classList.toggle("open")};
+$("q").oninput=e=>{state.q=e.target.value;render()};
+$("metro").onchange=e=>{state.metro=e.target.value;render()};
+$("cheap").onchange=e=>{state.cheap=e.target.checked;render()};
+$("bonus").onchange=e=>{state.bonus=e.target.checked;render()};
+chips();render();
+</script>
+</body>
+</html>
